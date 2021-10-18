@@ -1,23 +1,22 @@
+const { getHtmlWebpackPluginConfigs } = require("../../utils/pages");
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = function() {
-    const COMMON_CONFIG = {
-        template: "./src/index.html"
-    };
     switch (process.env.NODE_ENV) {
         case 'dev':
-            return new HtmlWebpackPlugin({
-                ...COMMON_CONFIG
-            })
+            return getHtmlWebpackPluginConfigs().map(config => new HtmlWebpackPlugin(config))
         case 'prod':
-            return new HtmlWebpackPlugin({
-                ...COMMON_CONFIG,
-                minify: {
-                    collapseWhitespace: true,
-                    removeComments: true,
-                    removeRedundantAttributes: true,
-                    useShortDoctype: true,
-                },
+            return getHtmlWebpackPluginConfigs().map(config => {
+                return new HtmlWebpackPlugin({
+                    ...config,
+                    minify: {
+                        collapseWhitespace: true,
+                        removeComments: true,
+                        removeRedundantAttributes: true,
+                        useShortDoctype: true,
+                    }
+                })
             })
     }
 }

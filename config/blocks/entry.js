@@ -1,8 +1,8 @@
-const path = require('path');
-const { PROJECT_ROOT } = require('../constrants');
+const { getEntries } = require('../utils/pages');
 
 module.exports = function() {
+    const entry = getEntries();
     return {
-        entry: path.resolve(PROJECT_ROOT, './src/main.ts')
+        entry: getEntries()
     }
 }

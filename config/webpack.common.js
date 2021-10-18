@@ -20,7 +20,7 @@ function plugins() {
     return {
         plugins: [
             cleanWebpackPlugin(),
-            htmlWebpackPlugin()
+            ...htmlWebpackPlugin()
         ]
     }
 }
