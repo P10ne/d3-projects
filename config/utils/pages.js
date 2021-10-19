@@ -24,7 +24,8 @@ const getHtmlWebpackPluginConfigs = () => {
       template: tmpPath,
       chunks: [page],
       templateParameters: {
-        title: page
+        title: page,
+        links: page === 'index' ? pages.map(p => `${p}.html`) : null
       }
     }
   })
