@@ -1,5 +1,4 @@
-import { INode } from "../models/INode";
-import { ILink } from "../models/ILink";
+import { INode, ILink } from "../models";
 
 export function getLinks(data: INode[]): ILink[] {
   const result: ILink[] = [];

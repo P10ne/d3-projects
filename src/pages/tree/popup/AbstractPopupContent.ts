@@ -1,7 +1,7 @@
 import { Subject } from "rxjs";
 
-export abstract class AbstractPopupContent {
-  protected _onClose$ = new Subject<any>();
+export abstract class AbstractPopupContent<CloseResultType> {
+  protected _onClose$ = new Subject<CloseResultType>();
   onClose$ = this._onClose$.pipe();
 
   node!: HTMLElement;

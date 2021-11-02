@@ -1,8 +1,8 @@
 import './popup.scss';
 import { merge, Observable, Subject, take, tap } from "rxjs";
 
-type OnErrorClose<T> = { hasError: true, data?: T };
-type OnSuccessClose<T> = { hasError: false, data?: T };
+type OnErrorClose<T> = { hasError: true, data: T };
+type OnSuccessClose<T> = { hasError: false, data: T };
 
 export type TPopupClosePayload<SuccessData, ErrorData> = OnSuccessClose<SuccessData> | OnErrorClose<ErrorData>;
 
@@ -14,10 +14,14 @@ export interface IPopupConfig {
   title: string;
 }
 
-export interface IPopupData<T> {
+interface IPopupDataBase<T> {
   popupConfig: IPopupConfig;
-  contentConfig?: T;
+  contentConfig: T;
 }
+export type TPopupData<T = void> = T extends void
+  ? Omit<IPopupDataBase<T>, "contentConfig">
+  : IPopupDataBase<T>
+;
 
 class Popup {
   container!: HTMLDivElement;
@@ -44,14 +48,14 @@ class Popup {
   // todo типизировать PopupContentClass (any -> AbstractPopupContent)
   open
   <
-    T extends Record<string, any>,
+    PopupContentPayloadType = any,
     SuccessCloseDataType = any,
     ErrorCloseDataType = any
   >(
     PopupContentClass: any,
-    config: IPopupData<T>
-  ): IPopupOpenInstance<SuccessCloseDataType, ErrorCloseDataType> {
-    const popupContentInstance = new PopupContentClass(config.contentConfig);
+    config: TPopupData<PopupContentPayloadType>
+  ): IPopupOpenInstance<SuccessCloseDataType | void, ErrorCloseDataType> {
+    const popupContentInstance = new PopupContentClass((config as IPopupDataBase<any>).contentConfig);
     const openedPopupNode: HTMLDivElement = document.createElement('div');
     openedPopupNode.classList.add('Popup-overlay');
     openedPopupNode.innerHTML = Popup.template;

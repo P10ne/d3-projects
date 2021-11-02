@@ -1,0 +1,7 @@
+.Button {
+  all: unset;
+  cursor: pointer;
+  &--link {
+    color: blue;
+  }
+}

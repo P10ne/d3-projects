@@ -1,4 +1,4 @@
-import { AbstractStorage } from "./models/AbstractStorage";
+import { AbstractStorage } from "./models";
 
 export class Storage<T extends { id: number }> implements AbstractStorage<T> {
   private LS_KEY = 'PERSONS_DATA';

@@ -3,7 +3,7 @@ type TName = {
   last: string;
   middle?: string;
 }
-type TBirthDate = string | null;
+type TBirthDate = string;
 
 export interface IPerson {
   name: TName;

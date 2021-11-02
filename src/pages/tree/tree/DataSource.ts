@@ -1,6 +1,5 @@
 import { BehaviorSubject, Observable } from "rxjs";
-import { AbstractStorage } from "./models/AbstractStorage";
-import { INode } from "./models/INode";
+import { AbstractStorage, INode } from "./models";
 
 // todo приватные методы, выполняют только работу с бд, публичные в том числе будут вызывать update
 

@@ -1,15 +1,19 @@
 import {
   select,
   forceSimulation, forceManyBody, forceLink, forceY, forceX,
-  Selection, BaseType
+  Selection
 } from 'd3';
-import { INode } from "./models/INode";
+import { INode, IPerson, TNewPerson } from "./models";
 import { DataSource } from "./DataSource";
 import { Storage } from "./Storage";
 import { map } from "rxjs";
-import { IPerson } from "./models/IPerson";
 import { renderPersonNode } from "./functions/renderPersonNode";
 import { getLinks } from "./functions/getLinks";
+import { popup } from "../popup/Popup";
+import {
+  AddPersonPopup,
+  IAddPersonPopupData,
+} from "../popup/popups/AddPerson/AddPersonPopup";
 
 let dataSource: DataSource<INode<IPerson>>;
 
@@ -32,9 +36,15 @@ document.querySelector('#addChildBtn')!.addEventListener('click', async function
 })
 
 document.querySelector('#addNodeBtn')!.addEventListener('click', async function() {
-  const depth = Number.parseInt(document.querySelector<HTMLInputElement>('#depthInput')!.value);
-  await dataSource.add({
-    data: {name: {first: 'f', last: 'as'}, birthDate: 'asf'}, parentIds: [], childrenIds: [], depth: depth
+  // const depth = Number.parseInt(document.querySelector<HTMLInputElement>('#depthInput')!.value);
+  // await dataSource.add({
+  //   data: {name: {first: 'f', last: 'as'}, birthDate: 'asf'}, parentIds: [], childrenIds: [], depth: depth
+  // })
+
+  popup.open(AddPersonPopup, {
+    popupConfig: { title: 'Добавление ноды' }
+  }).onClose$.subscribe(data => {
+
   })
 })
 
