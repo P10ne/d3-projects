@@ -202,8 +202,7 @@ export class AddPersonPopup extends AbstractPopupContent<TAddPersonPopupClosePay
     this.node.querySelector(`.${CLASSES.SUBMIT_BTN}`)!.addEventListener('click', e => {
       e.preventDefault();
       const newNode = getNewNodeFromForm();
-      this._onClose$.next({ hasError: false, data: newNode});
-      this._onClose$.complete();
+      this.close({ hasError: false, data: newNode});
     })
   }
 }

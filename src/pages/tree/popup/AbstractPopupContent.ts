@@ -12,11 +12,18 @@ export abstract class AbstractPopupContent<CloseResultType> {
     this.initHandlers(data);
   }
 
+  protected close(result: CloseResultType) {
+    this._onClose$.next(result);
+    this._onClose$.complete();
+  }
+
   private initNode(tmp: string): void {
     const container: HTMLDivElement = document.createElement('div');
     container.innerHTML = tmp;
     this.node = container;
   }
+
+
 
   protected abstract initData(data?: any): void;
   protected abstract initHandlers(data?: any): void;
