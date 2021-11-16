@@ -1,3 +1,3 @@
 import { INode } from "./INode";
 
-export type TNewNode<T> = Omit<INode<T>, "id">;
+export type TNewNode<T = any> = Omit<INode<T>, "id">;

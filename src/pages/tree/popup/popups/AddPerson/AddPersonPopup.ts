@@ -54,7 +54,7 @@ const TEMPLATE = `
       </div>
       <div class="Form__field">
           <label for="depth">Уровень: </label>
-          <input type="number" disabled id="${FORM_IDS.DEPTH}" />
+          <input type="number" id="${FORM_IDS.DEPTH}" />
       </div>
       
       <div class="Form__field-group ${CLASSES.PARENTS_GROUP}">
