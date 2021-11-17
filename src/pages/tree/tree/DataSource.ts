@@ -21,21 +21,27 @@ export class DataSource<T extends INode> {
     return await this._storage.add(newDataWithId as T);
   }
 
-  // async remove(data: T) {
-  //   const deleteSuccess = await this._storage.remove(data);
-  //   this._data.filter(item => item.childrenIds.includes(data.id)).forEach(item => {
-  //     const childrenIdIndexForDelete = item.childrenIds.findIndex(id => id === data.id);
-  //     const newChildrenIds = item.childrenIds.splice(childrenIdIndexForDelete, 1);
-  //     // @ts-ignore
-  //     this.edit(item, {
-  //       childrenIds: newChildrenIds
-  //     });
-  //   })
-  // }
+  async remove(data: T): Promise<boolean> {
+    return await this._storage.remove(data);
+  }
 
   async edit(source: T, target: Partial<T>): Promise<T> {
     return await this._storage.update(source, target);
   }
+
+  async getById(id: number): Promise<T> {
+    return await this._storage.getById(id);
+  }
+
+  async getParents(child: T): Promise<T[]> {
+    return await this._storage.getParents(child);
+  }
+
+  async getChildren(parent: T): Promise<T[]> {
+    return await this._storage.getChildren(parent);
+  }
+
+
 
   private emitData(data: T[]): void {
     this._data$.next(data);

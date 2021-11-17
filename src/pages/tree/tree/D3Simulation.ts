@@ -22,6 +22,11 @@ export class D3Simulation {
     return this._checkedNodes;
   }
 
+  public clearCheckedNodes(): void {
+    this._checkedNodes = [];
+    this.redraw(this._nodes, this._links);
+  }
+
   constructor(
     private _svg: SVGElement
   )

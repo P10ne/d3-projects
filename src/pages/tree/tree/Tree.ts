@@ -71,6 +71,7 @@ export class Tree<TDataItem extends INode> {
 
   private async addNode<T extends TNewNode>(data: T): Promise<TDataItem> {
     const addedNode = await this._dataSource.add(data);
+    this._d3Simulation.clearCheckedNodes();
     this._dataSource.update();
     return addedNode;
   }
@@ -85,8 +86,33 @@ export class Tree<TDataItem extends INode> {
       // @ts-ignore
       await this._dataSource.edit(parent, { childrenIds: [...parent.childrenIds, addedChildNode.id] });
     }
+    this._d3Simulation.clearCheckedNodes();
     this._dataSource.update();
 
     return addedChildNode;
+  }
+
+  public async removeNode() {
+    const nodeToDelete = this._d3Simulation.checkedNodes[0];
+    // @ts-ignore
+    const children = await this._dataSource.getChildren(nodeToDelete);
+    if (children && children.length > 0) {
+      alert('Нельзя удалить ноду, содержащую другие дочерние ноды');
+      return;
+    }
+    // @ts-ignore
+    const deleteSuccess = await this._dataSource.remove(nodeToDelete);
+    if (deleteSuccess) {
+      // @ts-ignore
+      const parents = await this._dataSource.getParents(nodeToDelete);
+      for (let parent of parents) {
+        const newChildrenIds = parent.childrenIds.filter(id => id !== nodeToDelete.id);
+        // @ts-ignore
+        await this._dataSource.edit(parent, { childrenIds: newChildrenIds });
+
+      }
+      this._d3Simulation.clearCheckedNodes();
+      this._dataSource.update();
+    }
   }
 }

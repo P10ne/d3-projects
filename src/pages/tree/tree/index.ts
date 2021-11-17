@@ -14,7 +14,7 @@ function initTemporaryBtns() {
   })
 
   document.querySelector('#removeNode')!.addEventListener('click', async function() {
-
+    tree.removeNode();
   })
 
   document.querySelector('#clearChecked')!.addEventListener('click', function() {

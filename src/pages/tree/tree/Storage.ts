@@ -1,6 +1,6 @@
-import { AbstractStorage } from "./models";
+import { AbstractStorage, INode } from "./models";
 
-export class Storage<T extends { id: number }> implements AbstractStorage<T> {
+export class Storage<T extends INode> implements AbstractStorage<T> {
   private LS_KEY = 'PERSONS_DATA';
 
   private async saveData(data: T[]): Promise<void> {
@@ -57,6 +57,27 @@ export class Storage<T extends { id: number }> implements AbstractStorage<T> {
     } catch (e) {
       return Promise.reject('Error while updating data');
     }
+  }
+
+  async getById(id: number): Promise<T> {
+    try {
+      const data = await this.getData();
+      const foundItem = data.find(item => item.id === id);
+      return foundItem
+        ? Promise.resolve(foundItem)
+        : Promise.reject('Node was not found');
+    } catch (e) {
+      return Promise.reject('Error while getById');
+    }
+  }
+
+  async getChildren(obj: T): Promise<T[]> {
+    return Promise.resolve([]);
+  }
+
+  async getParents(obj: T): Promise<T[]> {
+    const data = await this.getData();
+    return Promise.resolve(data.filter(item => item.childrenIds.includes(obj.id)));
   }
 
 }
