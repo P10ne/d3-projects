@@ -1,7 +1,8 @@
 import { Tree } from "./Tree";
+import { DataSource } from "./DataSource";
 
 const svg = document.querySelector<SVGElement>('#simulation')!;
-const tree = new Tree(svg);
+const tree = new Tree(svg, new DataSource());
 
 export async function init() {
   tree.init();
