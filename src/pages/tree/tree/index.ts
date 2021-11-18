@@ -29,5 +29,9 @@ function initTemporaryBtns() {
   document.querySelector('#getSimpleTree')!.addEventListener('click', function() {
     tree.simpleTree();
   })
+
+  document.querySelector('#loadChildren')!.addEventListener('click', function() {
+    tree.loadChildrenForSelected();
+  })
 }
 

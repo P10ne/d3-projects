@@ -77,7 +77,12 @@ export class DataSource<T extends INode> extends AbstractDataSource<T> {
   }
 
   async getNodeChildren(node: T): Promise<T[]> {
-    return Promise.resolve([]);
+    const data = await this.getData();
+    return this.getChildren(node, data);
+  }
+
+  private getChildren(node: T, data: T[]): T[] {
+    return data.filter(item => item.parentIds.includes(node.id));
   }
 
   async getNodeParents(node: T): Promise<T[]> {

@@ -126,7 +126,8 @@ export class Tree<TDataItem extends INode> {
     this.setDataAndUpdate(await this._dataSource.getTreeByNode(this._simulationCheckedNodes[0]));
   }
 
-  public loadChildren() {
-
+  public async loadChildrenForSelected() {
+    const children = await this._dataSource.getNodeChildren(this._simulationCheckedNodes[0] as TDataItem);
+    this.setDataAndUpdate([...this._currentData, ...children]);
   }
 }
