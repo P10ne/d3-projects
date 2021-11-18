@@ -8,6 +8,7 @@ import { AbstractDataSource } from "./AbstractDataSource";
 export class Tree<TDataItem extends INode> {
   private _d3Simulation: D3Simulation;
   private _simulationCheckedNodes: NodesType[] = [];
+  private _currentData: TDataItem[] = [];
 
   constructor(
     _svg: SVGElement,
@@ -16,10 +17,15 @@ export class Tree<TDataItem extends INode> {
     this._d3Simulation = new D3Simulation(_svg);
   }
 
+  private setDataAndUpdate(data: TDataItem[]): void {
+    this._currentData = data;
+    this.updateTree(data);
+  }
+
   public async init(): Promise<void> {
     this.subscribeToCheckedNodes();
     const data = await this._dataSource.getData();
-    this.updateTree(data);
+    this.setDataAndUpdate(data);
   }
 
   private subscribeToCheckedNodes(): void {
@@ -70,7 +76,7 @@ export class Tree<TDataItem extends INode> {
   private async addNode<T extends TNewNode>(data: T): Promise<TDataItem> {
     const addedNode = await this._dataSource.addNode(data);
     this._d3Simulation.clearCheckedNodes();
-    this.updateTree(await this._dataSource.getData());
+    this.setDataAndUpdate(await this._dataSource.getData());
 
     return addedNode;
   }
@@ -86,7 +92,7 @@ export class Tree<TDataItem extends INode> {
       await this._dataSource.editNode(parent, { childrenIds: [...parent.childrenIds, addedChildNode.id] });
     }
     this._d3Simulation.clearCheckedNodes();
-    this.updateTree(await this._dataSource.getData());
+    this.setDataAndUpdate(await this._dataSource.getData());
 
     return addedChildNode;
   }
@@ -111,12 +117,16 @@ export class Tree<TDataItem extends INode> {
 
       }
       this._d3Simulation.clearCheckedNodes();
-      this.updateTree(await this._dataSource.getData());
+      this.setDataAndUpdate(await this._dataSource.getData());
     }
   }
 
   public async simpleTree() {
     // @ts-ignore
-    this.updateTree(await this._dataSource.getTreeByNode(this._simulationCheckedNodes[0]));
+    this.setDataAndUpdate(await this._dataSource.getTreeByNode(this._simulationCheckedNodes[0]));
+  }
+
+  public loadChildren() {
+
   }
 }
