@@ -1,14 +1,23 @@
 import { ILink, INode, IPerson } from "./models";
 import { forceLink, forceManyBody, forceSimulation, forceX, forceY, Simulation, SimulationNodeDatum, Selection, select, SimulationLinkDatum } from "d3";
+import { Publisher } from "./Publisher";
 
 
-type NodesType = SimulationNodeDatum & INode<IPerson>;
+export type NodesType = SimulationNodeDatum & INode<IPerson>;
 type LinksType = SimulationLinkDatum<NodesType>;
 type TSVGGNodesSelection = Selection<SVGGElement, NodesType, any, any>;
 type TSVGLineLinksSelection = Selection<SVGLineElement, LinksType, any, any>;
 type LinksSelectionDataValue = Required<NodesType>;
 
-export class D3Simulation {
+
+export enum ESimulationEvents {
+  CheckedNodesChanged= 'CheckedNodesChanged'
+}
+type TEvents = {
+  [ESimulationEvents.CheckedNodesChanged]: (nodes: NodesType[]) => void
+}
+
+export class D3Simulation extends Publisher<TEvents>{
   private _simulation: Simulation<NodesType, ILink>;
   private _svgGNodesSelection!: TSVGGNodesSelection
   private _svgLineLinksSelection!: TSVGLineLinksSelection;
@@ -18,12 +27,13 @@ export class D3Simulation {
 
   private _checkedNodes: NodesType[] = [];
 
-  get checkedNodes(): NodesType[] {
-    return this._checkedNodes;
+  private set checkedNodes(newNodes: NodesType[]) {
+    this._checkedNodes = newNodes;
+    this.publish(ESimulationEvents.CheckedNodesChanged, newNodes);
   }
 
   public clearCheckedNodes(): void {
-    this._checkedNodes = [];
+    this.checkedNodes = [];
     this.redraw(this._nodes, this._links);
   }
 
@@ -31,6 +41,7 @@ export class D3Simulation {
     private _svg: SVGElement
   )
   {
+    super();
     this._simulation = this.createSimulation();
     this._svg.addEventListener('click', this.svgClickHandler.bind(this));
   }
@@ -109,11 +120,11 @@ export class D3Simulation {
   private nodeClickHandler(e: PointerEvent, dataItem: NodesType): void {
     e.stopPropagation();
     if (e.ctrlKey) {
-      const alreadyCheckedNodeIndex = this._checkedNodes.findIndex(cn => cn === dataItem);
-      if (alreadyCheckedNodeIndex === -1) {
-        this._checkedNodes.push(dataItem);
+      const alreadyCheckedNode = this._checkedNodes.find(cn => cn === dataItem);
+      if (alreadyCheckedNode) {
+        this.checkedNodes = this._checkedNodes.filter(n => n !== alreadyCheckedNode);
       } else {
-        this._checkedNodes.splice(alreadyCheckedNodeIndex, 1)
+        this.checkedNodes = [...this._checkedNodes, dataItem];
       }
       this.redraw(this._nodes, this._links);
     }

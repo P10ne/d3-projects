@@ -1,6 +1,5 @@
-import { D3Simulation } from "./D3Simulation";
-import { ILink, INode, TNewNode } from "./models";
-import { map } from "rxjs";
+import { D3Simulation, ESimulationEvents, NodesType } from "./D3Simulation";
+import { INode, TNewNode } from "./models";
 import { getLinks } from "./functions/getLinks";
 import { popup } from "../popup/Popup";
 import { AddPersonPopup, IAddPersonPopupData } from "../popup/popups/AddPerson/AddPersonPopup";
@@ -8,18 +7,25 @@ import { AbstractDataSource } from "./AbstractDataSource";
 
 export class Tree<TDataItem extends INode> {
   private _d3Simulation: D3Simulation;
+  private _simulationCheckedNodes: NodesType[] = [];
 
   constructor(
     _svg: SVGElement,
     private _dataSource: AbstractDataSource<TDataItem>
   ) {
     this._d3Simulation = new D3Simulation(_svg);
-    this.init();
   }
 
   public async init(): Promise<void> {
+    this.subscribeToCheckedNodes();
     const data = await this._dataSource.getData();
     this.updateTree(data);
+  }
+
+  private subscribeToCheckedNodes(): void {
+    this._d3Simulation.subscribe(ESimulationEvents.CheckedNodesChanged, (nodes) => {
+      this._simulationCheckedNodes = nodes;
+    })
   }
 
   private updateTree(data: TDataItem[]): void {
@@ -50,13 +56,13 @@ export class Tree<TDataItem extends INode> {
       contentConfig: {
         data: {
           children: [],
-          parents: this._d3Simulation.checkedNodes
+          parents: this._simulationCheckedNodes
         }
       }
     }).onClose$.subscribe(({ hasError, data }) => {
       if (!hasError) {
         // @ts-ignore
-        this.addChildNode(data, this._d3Simulation.checkedNodes);
+        this.addChildNode(data, this._simulationCheckedNodes);
       }
     })
   }
@@ -86,7 +92,7 @@ export class Tree<TDataItem extends INode> {
   }
 
   public async removeNode() {
-    const nodeToDelete = this._d3Simulation.checkedNodes[0];
+    const nodeToDelete = this._simulationCheckedNodes[0];
     // @ts-ignore
     const children = await this._dataSource.getNodeChildren(nodeToDelete);
     if (children && children.length > 0) {
@@ -111,6 +117,6 @@ export class Tree<TDataItem extends INode> {
 
   public async simpleTree() {
     // @ts-ignore
-    this.updateTree(await this._dataSource.getTreeByNode(this._d3Simulation.checkedNodes[0]));
+    this.updateTree(await this._dataSource.getTreeByNode(this._simulationCheckedNodes[0]));
   }
 }
