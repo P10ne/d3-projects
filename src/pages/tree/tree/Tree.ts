@@ -18,22 +18,14 @@ export class Tree<TDataItem extends INode> {
   }
 
   public async init(): Promise<void> {
-    this.subscribeToDataSource();
-    await this._dataSource.update();
+    const data = await this._dataSource.getData();
+    this.updateTree(data);
   }
 
-  private subscribeToDataSource() {
-    this._dataSource.data$.pipe(
-      map(data => ({
-        nodes: data,
-        links: getLinks(data)
-      }))
-    ).subscribe(({ nodes, links }) => {
-      const clonedNodes = JSON.parse(JSON.stringify(nodes)) as TDataItem[];
-      const clonedLinks = JSON.parse(JSON.stringify(links)) as ILink[];
-
-      this._d3Simulation.update(clonedNodes, clonedLinks);
-    });
+  private updateTree(data: TDataItem[]): void {
+    const d3Nodes = data;
+    const d3Links = getLinks(data);
+    this._d3Simulation.update(d3Nodes, d3Links);
   }
 
   public openPopupToAddNode() {
@@ -72,7 +64,7 @@ export class Tree<TDataItem extends INode> {
   private async addNode<T extends TNewNode>(data: T): Promise<TDataItem> {
     const addedNode = await this._dataSource.addNode(data);
     this._d3Simulation.clearCheckedNodes();
-    this._dataSource.update();
+    this.updateTree(await this._dataSource.getData());
 
     return addedNode;
   }
@@ -88,7 +80,7 @@ export class Tree<TDataItem extends INode> {
       await this._dataSource.editNode(parent, { childrenIds: [...parent.childrenIds, addedChildNode.id] });
     }
     this._d3Simulation.clearCheckedNodes();
-    this._dataSource.update();
+    this.updateTree(await this._dataSource.getData());
 
     return addedChildNode;
   }
@@ -113,7 +105,7 @@ export class Tree<TDataItem extends INode> {
 
       }
       this._d3Simulation.clearCheckedNodes();
-      this._dataSource.update();
+      this.updateTree(await this._dataSource.getData());
     }
   }
 }
