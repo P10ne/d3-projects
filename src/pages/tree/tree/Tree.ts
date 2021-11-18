@@ -108,4 +108,9 @@ export class Tree<TDataItem extends INode> {
       this.updateTree(await this._dataSource.getData());
     }
   }
+
+  public async simpleTree() {
+    // @ts-ignore
+    this.updateTree(await this._dataSource.getTreeByNode(this._d3Simulation.checkedNodes[0]));
+  }
 }

@@ -82,12 +82,37 @@ export class DataSource<T extends INode> extends AbstractDataSource<T> {
 
   async getNodeParents(node: T): Promise<T[]> {
     const data = await this.getData();
-    return Promise.resolve(data.filter(item => item.childrenIds.includes(node.id)));
+    return this.getParents(node, data);
+  }
+
+  private getParents(node: T, data: T[]): T[] {
+    return data.filter(item => item.childrenIds.includes(node.id));
+  }
+
+  private getParentsDeepList(node: T, data: T[]): T[] {
+    const list: T[] = [];
+
+    const getP = (node: T): void => {
+      const parents = this.getParents(node, data);
+      parents.forEach(parent => {
+        getP(parent);
+      });
+      list.push(...parents);
+    };
+
+    getP(node);
+
+    return list;
   }
 
   private async generateNextId(): Promise<number> {
     const data = await this.getData();
     return  data.length > 0 ? Math.max(...data.map(i => i.id)) + 1 : 0;
+  }
+
+  async getTreeByNode(node: T): Promise<T[]> {
+    const data = await this.getData();
+    return [node, ...this.getParentsDeepList(node, data)];
   }
 
 }

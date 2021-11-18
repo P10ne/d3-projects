@@ -25,5 +25,9 @@ function initTemporaryBtns() {
   document.querySelector('#addChildBtn')!.addEventListener('click', async function() {
     tree.openPopupToAddChildNode();
   })
+
+  document.querySelector('#getSimpleTree')!.addEventListener('click', function() {
+    tree.simpleTree();
+  })
 }
 
