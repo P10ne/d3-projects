@@ -1,73 +1,129 @@
-import { BehaviorSubject, Observable } from "rxjs";
-import { AbstractStorage, INode } from "./models";
+import { INode, TNewNode } from "./models";
+import { AbstractDataSource } from "./AbstractDataSource";
 
-// todo приватные методы, выполняют только работу с бд, публичные в том числе будут вызывать update
+export class DataSource<T extends INode> extends AbstractDataSource<T> {
+  private LS_KEY = 'PERSONS_DATA';
 
-export class DataSource<T extends INode> {
-  private _data: T[] = [];
-
-  private _data$: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
-
-  public data$: Observable<T[]> = this._data$.pipe();
-
-  constructor(private _storage: AbstractStorage<T>) {
-    this._data$.next(this._data);
+  private async saveData(data: T[]): Promise<void> {
+    try {
+      localStorage.setItem(this.LS_KEY, JSON.stringify(data));
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject('Error while saving data');
+    }
   }
 
-  async update(): Promise<void> {
-    this._data = await this._storage.getData();
-    this.emitData();
+  async getData(): Promise<T[]> {
+    const data = localStorage.getItem(this.LS_KEY) || "[]";
+    try {
+      return Promise.resolve(JSON.parse(data!));
+    } catch (e) {
+      return Promise.reject('Error while reading data');
+    }
   }
 
-  async add(data: Omit<T, 'id'>): Promise<T> {
+  async addNode<TToAddNode extends TNewNode>(node: TToAddNode): Promise<T> {
     const newDataWithId = {
-      ...data,
-      id: this.generateNextId()
+      ...node,
+      id: await this.generateNextId()
     };
-    // todo fix "as T"
-    const addedObj = await this._storage.add(newDataWithId as T);
-    this._data.push(addedObj);
-    this.emitData();
-    return addedObj;
+    try {
+      const data = await this.getData();
+      data.push(newDataWithId as T);
+      await this.saveData(data);
+      return Promise.resolve(newDataWithId as T);
+    } catch (e) {
+      return Promise.reject('Error while adding data');
+    }
   }
 
-  async addChild(child: Omit<T, 'id'>, firstParent: T, secondParent: T) {
-    child.parentIds = [firstParent, secondParent].map(parent => parent.id);
-    const { id: childId } = await this.add(child);
-    firstParent.childrenIds.push(childId);
-    secondParent.childrenIds.push(childId);
-
-    // todo ts-ignore
-    // @ts-ignore
-    await this.edit(firstParent, { childrenIds: firstParent.childrenIds });
-    // @ts-ignore
-    await this.edit(secondParent, { childrenIds: secondParent.childrenIds });
-    return this.update();
+  async removeNode(node: T): Promise<boolean> {
+    try {
+      const data = await this.getData();
+      const removingIndex = data.findIndex(item => item.id === node.id);
+      if (removingIndex === -1) { return Promise.reject('Removing node was not found') }
+      data.splice(removingIndex, 1);
+      await this.saveData(data);
+      return Promise.resolve(true);
+    } catch (e) {
+      return Promise.reject('Error while removing data');
+    }
   }
 
-  async remove(data: T) {
-    const deleteSuccess = await this._storage.remove(data);
-    this._data.filter(item => item.childrenIds.includes(data.id)).forEach(item => {
-      const childrenIdIndexForDelete = item.childrenIds.findIndex(id => id === data.id);
-      const newChildrenIds = item.childrenIds.splice(childrenIdIndexForDelete, 1);
-      // @ts-ignore
-      this.edit(item, {
-        childrenIds: newChildrenIds
+  async editNode(sourceNode: T, targetProps: Partial<T>): Promise<T> {
+    try {
+      const data = await this.getData();
+      const updatingIndex = data.findIndex(item => item.id === sourceNode.id);
+      if (updatingIndex === -1) { return Promise.reject('Updating obj was not found') }
+      const newObj: T = { ...sourceNode, ...targetProps }
+      data.splice(updatingIndex, 1, newObj);
+      await this.saveData(data);
+      return Promise.resolve(newObj);
+    } catch (e) {
+      return Promise.reject('Error while updating data');
+    }
+  }
+
+  async getNodeById(id: number): Promise<T> {
+    try {
+      const data = await this.getData();
+      const foundItem = data.find(item => item.id === id);
+      return foundItem
+        ? Promise.resolve(foundItem)
+        : Promise.reject('Node was not found');
+    } catch (e) {
+      return Promise.reject('Error while getById');
+    }
+  }
+
+  async getNodeChildren(node: T): Promise<T[]> {
+    const data = await this.getData();
+    return this.getChildren(node, data);
+  }
+
+  private getChildren(node: T, data: T[]): T[] {
+    return data.filter(item => item.parentIds.includes(node.id));
+  }
+
+  async getNodeParents(node: T): Promise<T[]> {
+    const data = await this.getData();
+    return this.getParents(node, data);
+  }
+
+  private getParents(node: T, data: T[]): T[] {
+    return data.filter(item => item.childrenIds.includes(node.id));
+  }
+
+  private getParentsDeepList(node: T, data: T[]): T[] {
+    const list: T[] = [];
+
+    const getP = (node: T): void => {
+      const parents = this.getParents(node, data);
+      parents.forEach(parent => {
+        getP(parent);
       });
-    })
-    return this.update();
+      list.push(...parents);
+    };
+
+    getP(node);
+
+    return list;
   }
 
-  async edit(source: T, target: Partial<T>) {
-    const updatedObj = await this._storage.update(source, target);
-    return this.update();
+  private async generateNextId(): Promise<number> {
+    const data = await this.getData();
+    return  data.length > 0 ? Math.max(...data.map(i => i.id)) + 1 : 0;
   }
 
-  private emitData(): void {
-    this._data$.next(this._data);
+  async getTreeByNode(node: T): Promise<T[]> {
+    const data = await this.getData();
+    return [node, ...this.getParentsDeepList(node, data)];
   }
 
-  private generateNextId(): number {
-    return this._data.length > 0 ? Math.max(...this._data.map(i => i.id)) + 1 : 0;
+  async getNodesList(): Promise<T[]> {
+    return await this.getData();
   }
+
 }
+
+export default new DataSource();
