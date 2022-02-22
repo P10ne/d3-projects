@@ -1,8 +1,8 @@
 import { Tree } from "./Tree";
-import { DataSource } from "./DataSource";
+import dataSource from "./DataSource";
 
 const svg = document.querySelector<SVGElement>('#simulation')!;
-const tree = new Tree(svg, new DataSource());
+const tree = new Tree(svg, dataSource);
 
 export async function init() {
   tree.init();
@@ -32,6 +32,14 @@ function initTemporaryBtns() {
 
   document.querySelector('#loadChildren')!.addEventListener('click', function() {
     tree.loadChildrenForSelected();
+  })
+
+  document.querySelector('#stepByStep')!.addEventListener('click', function () {
+    tree.initSingleNode();
+  })
+
+  document.querySelector('#getParents')!.addEventListener('click', function () {
+    tree.loadParentsForSelected();
   })
 }
 

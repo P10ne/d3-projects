@@ -120,4 +120,10 @@ export class DataSource<T extends INode> extends AbstractDataSource<T> {
     return [node, ...this.getParentsDeepList(node, data)];
   }
 
+  async getNodesList(): Promise<T[]> {
+    return await this.getData();
+  }
+
 }
+
+export default new DataSource();

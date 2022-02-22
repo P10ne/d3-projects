@@ -130,4 +130,14 @@ export class Tree<TDataItem extends INode> {
     const children = await this._dataSource.getNodeChildren(this._simulationCheckedNodes[0] as TDataItem);
     this.setDataAndUpdate([...this._currentData, ...children]);
   }
+
+  public async loadParentsForSelected() {
+    const parents = await this._dataSource.getNodeParents(this._simulationCheckedNodes[0] as TDataItem);
+    this.setDataAndUpdate([...this._currentData, ...parents]);
+  }
+
+  public async initSingleNode() {
+    const node = await this._dataSource.getNodeById(this._simulationCheckedNodes[0].id);
+    this.setDataAndUpdate([node]);
+  }
 }

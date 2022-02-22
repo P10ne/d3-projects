@@ -1,5 +1,18 @@
 import { ILink, INode, IPerson } from "./models";
-import { forceLink, forceManyBody, forceSimulation, forceX, forceY, Simulation, SimulationNodeDatum, Selection, select, SimulationLinkDatum } from "d3";
+import {
+  forceLink,
+  forceManyBody,
+  forceSimulation,
+  forceX,
+  forceY,
+  Simulation,
+  SimulationNodeDatum,
+  Selection,
+  ForceLink,
+  select,
+  SimulationLinkDatum,
+  forceCollide
+} from "d3";
 import { Publisher } from "./Publisher";
 
 
@@ -51,6 +64,7 @@ export class D3Simulation extends Publisher<TEvents>{
       .stop()
       .force('charge', forceManyBody().strength(-300))
       .force('link', forceLink().links([]).distance(220))
+      .force('collide', forceCollide().radius(90))
       .force('x', forceX<NodesType>().x(d => 640).strength(0.01))
       .force('y', forceY<NodesType>().y(d => {
         return d.depth * 220 + 220
@@ -71,8 +85,7 @@ export class D3Simulation extends Publisher<TEvents>{
     this._links = newLinks.map(d => Object.assign({}, d));
 
     this._simulation.nodes(this._nodes);
-    // @ts-ignore
-    this._simulation.force('link').links(this._links);
+    (this._simulation.force('link') as ForceLink<NodesType, LinksType>).links(this._links);
 
     const data = this.redraw(this._nodes, this._links);
     const { svgNodes, svgLinks } = data;
