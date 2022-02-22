@@ -1,0 +1,27 @@
+.Form {
+  &__field {
+    display: flex;
+    justify-content: space-between;
+    &-group {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px dashed grey;
+      border-bottom: 1px dashed grey;
+      padding: 10px 0;
+      &-title {
+        font-weight: bold;
+      }
+      & + &, & + .Form__field {
+        margin-top: 10px;
+      }
+    }
+    & + &, & + .Form__field-group {
+      margin-top: 10px;
+    }
+  }
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+  }
+}

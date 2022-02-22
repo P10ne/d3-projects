@@ -1,0 +1,1 @@
+export type ILink = { source: number, target: number };
